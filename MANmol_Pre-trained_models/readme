@@ -1,1 +1,1 @@
-
+The pre-trained model is based on the adsorption energy dataset AEdata, and only molecular graph data augmentation is performed (13320-91241).
