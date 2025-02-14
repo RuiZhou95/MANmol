@@ -1,1 +1,2 @@
 AEdata.csv----A dataset of adsorption energies for 13,320 organic small molecules on the carbon steel surface was built using all-atom molecular dynamics.
+all_data_ID-smiles-graph-13320.pkl----Sample datasets are augmented for multimodal feature data.
