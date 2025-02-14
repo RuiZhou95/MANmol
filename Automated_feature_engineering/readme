@@ -1,1 +1,9 @@
-
+This section of the code provides the complete functionality for preparing MANmol, including: 
+1) organizing the raw dataset, with a focus on validating SMILES; 
+2) descriptor calculation, including 2D and 3D descriptors based on Mordred, as well as 130 GAFF2 force field (MD) descriptors derived from molecular 3D models; 
+3) descriptor selection using statistical methods (variance, Pearson, Spearman, MIC, and distance correlation coefficients); 
+4) machine learning-based descriptor selection, specifically using XGBoost recursive feature elimination; 
+5) SMILES data augmentation, specifically transforming SMILES into multiple non-canonical forms; 
+6) generating corresponding molecular graphs from SMILES; 
+7) molecular graph data augmentation, applying equivalent transformations such as matrix rotation and flipping; 
+8) random combination of selected descriptors, transformed SMILES, and molecular graphs to create a multimodal data augmented dataset.
