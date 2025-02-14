@@ -1,5 +1,5 @@
 ---
-base_model: /public/home/zhour/codeLab/EPAA-ml/LLM/local_ChemBERTa-77M-MLM
+base_model: ChemBERTa-77M-MLM
 library_name: peft
 ---
 
