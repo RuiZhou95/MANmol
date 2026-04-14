@@ -1,5 +1,3 @@
-# Data-Driven Multimodal Learning for Green Lubricant Additive Discovery
-
 # MANmol: Multimodal Attention Network for Molecules
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
