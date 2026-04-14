@@ -61,7 +61,7 @@ MANmol is a data-driven multimodal learning framework designed to accelerate the
 
 ### Overall Architecture
 ```
-![MANmol Framework Architecture](cover_letter.png)
+![image](cover_letter.png)
 
 *Figure: MANmol multimodal attention network architecture integrating molecular graphs, SMILES sequences, and molecular descriptors through adaptive attention fusion.*
 ```
