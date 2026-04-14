@@ -185,30 +185,13 @@ MANmol/
 │   └── Mask_pre-trained_model/        # Pre-trained model files
 │
 ├── symbolic_regression/               # Symbolic regression analysis
-│   ├── SR.py                          # Symbolic regression main program
-│   ├── SR_validation.py               # Validation program
-│   └── readme
-│
-└── manuscript/                        # Academic papers
-    ├── 720621_0_art_file_12610364_td6j80.pdf
-    └── 720621_0_supp_12610387_td6j81.pdf
+    ├── SR.py                          # Symbolic regression main program
+    ├── SR_validation.py               # Validation program
+    └── readme
 ```
 
 ## 🔧 Installation Guide
-
-### 1. Environment Setup (Cluster Environment)
-```bash
-# Activate LubLLM environment
-conda activate LubLLM
-
-# Switch to GPU compute node (e.g., comput13)
-ssh comput13
-
-# Activate environment on compute node
-conda activate LubLLM
-```
-
-### 2. Dependency Installation
+### 1. Dependency Installation
 ```bash
 # Install PyTorch (choose based on CUDA version)
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
@@ -220,7 +203,7 @@ pip install torch_geometric
 pip install transformers pandas numpy scikit-learn matplotlib rdkit-pypi mordred openbabel pysr peft
 ```
 
-### 3. Verify Installation
+### 2. Verify Installation
 ```python
 import torch
 print(f"PyTorch version: {torch.__version__}")
@@ -295,7 +278,7 @@ python SR.py
 ### Performance Metrics
 | Model | R² Score | RMSE | MAE | Training Time |
 |-------|----------|------|-----|---------------|
-| MANmol (Multimodal) | 0.92 | 0.15 | 0.11 | 2.5 hours |
+| MANmol (Multimodal) | 0.92 | 0.15 | 0.11 | 2.1 hours |
 | ChemBERTa-77M | 0.87 | 0.21 | 0.16 | 1.8 hours |
 | GAT | 0.85 | 0.23 | 0.18 | 1.2 hours |
 | GCN | 0.83 | 0.25 | 0.20 | 1.0 hours |
@@ -349,14 +332,14 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 If you use MANmol in your research, please cite our paper:
 
 ```bibtex
-@article{zhou2024manmol,
-  title={MANmol: Multimodal Attention Network for Molecular Adsorption Energy Prediction},
-  author={Zhou, Rui and others},
-  journal={Nature Communications},
-  volume={15},
-  pages={1234--1245},
-  year={2024},
-  publisher={Nature Publishing Group}
+@article{###,
+  title={###},
+  author={###},
+  journal={###},
+  volume={###},
+  pages={###},
+  year={###},
+  publisher={###}
 }
 ```
 
@@ -364,7 +347,7 @@ If you use MANmol in your research, please cite our paper:
 
 ### Project Lead
 - **Rui Zhou** - Main Developer
-- **Email**: rui.zhou@example.com
+- **Email**: zhourui@licp.cas.cn
 - **GitHub**: [@RuiZhou95](https://github.com/RuiZhou95)
 
 ### Related Projects
@@ -385,12 +368,12 @@ If you use MANmol in your research, please cite our paper:
 
 ## 🎯 Future Plans
 
-### Short-term Goals (2024)
+### Short-term Goals (2026)
 - [ ] Release pre-trained models to Hugging Face Hub
 - [ ] Develop web interface and API services
 - [ ] Add more molecular representation modalities (3D structures, fingerprints, etc.)
 
-### Medium-to-long-term Goals (2025+)
+### Medium-to-long-term Goals (2027+)
 - [ ] Extend to other molecular property prediction tasks
 - [ ] Integrate active learning framework
 - [ ] Develop cloud deployment solutions
@@ -401,23 +384,4 @@ If you use MANmol in your research, please cite our paper:
 **⭐ If you find this project helpful, please give us a Star!** ⭐
 
 **🙏 Thank you for your interest and support of the MANmol project!**
-
-
-
-**The 376 million Organic Compounds SMILES dataset (OCSmi) is stored in pkl format with a size of 21GB. Due to the large file size, please contact the corresponding author via email to obtain the dataset.**
-
-1. VIIInfo (Viscosity Index Improver Informatics)
-https://github.com/RuiZhou95/Viscosity-Index-Improvers
-VIIInfo (Viscosity Index Improver Informatics): A comprehensive machine learning pipeline designed for high-performance Viscosity Index Improver (VII) polymers. It enables both high-throughput virtual screening and mechanistic mathematical modeling. The repository includes a curated dataset of 1,166 polymer viscosity indices to support data-driven polymer design.
-
-2. MANmol (Multimodal Attention Network for Molecules)
-https://github.com/RuiZhou95/MANmol
-MANmol (Multimodal Attention Network for Molecules): A deep learning framework that integrates multimodal feature fusion, adaptive attention weighting, and transfer learning to address data scarcity and accurately characterize molecular adsorption behavior. MANmol achieves state-of-the-art accuracy across multiple benchmarks. This project features:
-1.	A robust QSPR model built on a high-throughput molecular dynamics dataset of 13,320 adsorption energies;
-2.	AEdata: An adsorption energy dataset of 13,320 organic compounds;
-3.	OCSmi: A large-scale dataset containing 376 million organic compound SMILES.
-
-3. iFEQ (interpretable Feature-Engineered QSAR)
-https://github.com/RuiZhou95/ML4IL
-iFEQ (interpretable Feature-Engineered QSAR): An end-to-end toolkit for molecular informatics that streamlines molecular descriptor calculation, advanced feature engineering (via correlation analysis and Recursive Feature Elimination, RFE), and the construction of interpretable QSAR models. By integrating SHAP analysis and symbolic regression, iFEQ provides transparent, physically meaningful insights into structure-activity relationships.
 
