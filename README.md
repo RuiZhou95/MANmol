@@ -1,4 +1,3 @@
-![Uploading cover_letter.png…]()
 # MANmol: Multimodal Attention Network for Molecules
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
