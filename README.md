@@ -61,10 +61,18 @@ MANmol is a data-driven multimodal learning framework designed to accelerate the
 
 ### Overall Architecture
 ```
-![image](https://github.com/RuiZhou95/MANmol/blob/main/data/Overall%20Architecture.png)
+![image](https://github.com/RuiZhou95/MANmol/blob/main/data/cover_letter.png)
 
 *Figure: MANmol multimodal attention network architecture integrating molecular graphs, SMILES sequences, and molecular descriptors through adaptive attention fusion.*
 ```
+
+## 🏗️ Architecture Design
+
+### Overall Architecture
+
+![MANmol architecture](https://raw.githubusercontent.com/RuiZhou95/MANmol/main/data/cover_letter.png)
+
+*Figure: MANmol multimodal attention network architecture integrating molecular graphs, SMILES sequences, and molecular descriptors through adaptive attention fusion.*
 
 ### Technology Stack
 - **Deep Learning Framework**: PyTorch, PyTorch Geometric
