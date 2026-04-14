@@ -61,6 +61,7 @@ MANmol is a data-driven multimodal learning framework designed to accelerate the
 
 ### Overall Architecture
 ```
+![Uploading cover_letter.png…]()
 ┌─────────────────────────────────────────────────────────────┐
 │                     MANmol Framework                         │
 ├─────────────────────────────────────────────────────────────┤
