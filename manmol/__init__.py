@@ -1,1 +1,1 @@
-
+"""Clean MANmol training pipeline."""
