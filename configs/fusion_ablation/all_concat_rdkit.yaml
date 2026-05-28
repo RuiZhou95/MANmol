@@ -1,0 +1,43 @@
+seed: 42
+
+graph:
+  source: rdkit
+
+data:
+  descriptor_csv: data/3-Opt_XGB_descriptor.csv
+  graph_pkl: data/all_data_ID-smiles-graph-13320.pkl
+  split_csv: data/splits/split_seed42.csv
+  id_column: ID
+  smiles_column: smiles
+  target_column: target
+  descriptor_exclude_columns:
+    - ID
+    - smiles
+    - target
+    - adsorption_energy
+    - log2(AE)
+
+model:
+  smiles_model_name: DeepChem/ChemBERTa-77M-MLM
+  modalities:
+    - smiles
+    - descriptor
+    - graph
+  fusion: concat
+  node_input_dim: 18
+  hidden_size: 128
+  gnn_layers: 3
+  gnn_edge_dim: 12
+  dropout: 0.1
+  freeze_smiles_encoder: false
+
+training:
+  output_dir: outputs_fusion_ablation/all_concat_rdkit_seed42
+  device: auto
+  batch_size: 16
+  epochs: 100
+  learning_rate: 0.0001
+  weight_decay: 0.00001
+  patience: 20
+  num_workers: 0
+  max_length: 256
