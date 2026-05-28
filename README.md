@@ -25,7 +25,11 @@
 
 ## Project Overview
 
-MANmol is a data-driven multimodal learning framework designed to accelerate the discovery process of green lubricant additives. By integrating multiple modalities of information including molecular graph representations, SMILES sequences, and molecular descriptors, MANmol can accurately predict the adsorption energy of organic small molecules on carbon steel surfaces.
+MANmol predicts molecular adsorption energy on carbon steel surfaces for green lubricant additive discovery. It fuses three complementary molecular representations:
+
+- **Molecular Graph (GNN)**: GINEConv on RDKit-rich atom/bond features — captures local topology and bond-level interactions
+- **SMILES Sequence (Transformer)**: ChemBERTa encoder — captures long-range sequential patterns
+- **Molecular Descriptors (MLP)**: XGBoost-selected physicochemical descriptors — captures global molecular properties
 
 ### Research Background
 - **Problem**: Traditional lubricant additive discovery processes are time-consuming and labor-intensive, requiring extensive experimental validation
@@ -58,7 +62,26 @@ MANmol is a data-driven multimodal learning framework designed to accelerate the
    - Large-scale dataset processing capability (376 million organic compounds)
 
 ## 🏗️ Architecture Design
-
+```
+Input Molecule
+    │
+    ├──→ SMILES ──→ ChemBERTa ──→ Self-Attn ──→ [h_smiles]
+    │
+    ├──→ Descriptors ──→ MLP ────────────────→ [h_descriptor]
+    │
+    └──→ RDKit Graph ──→ GINEConv ──→ Pool ──→ [h_graph]
+                              │
+                    ┌─────────┴─────────┐
+                    │   Fusion Module   │
+                    │  concat | gated   │
+                    │  channel_gate |   │
+                    │  cross_attend     │
+                    └────────┬──────────┘
+                             │
+                        MLP Regressor
+                             │
+                       Prediction (y)
+```
 ### Overall Architecture
 
 ![MANmol architecture](./data/cover_letter.png)
@@ -67,7 +90,7 @@ MANmol is a data-driven multimodal learning framework designed to accelerate the
 
 ### Technology Stack
 - **Deep Learning Framework**: PyTorch, PyTorch Geometric
-- **Natural Language Processing**: Hugging Face Transformers
+- **Natural Language Processing**: Hugging Face Transformers([ChemBERTa](https://huggingface.co/DeepChem/ChemBERTa-100M-MLM))
 - **Feature Engineering**: RDKit, Mordred, OpenBabel
 - **Symbolic Regression**: PySR
 - **Efficient Fine-tuning**: PEFT (LoRA)
@@ -109,161 +132,175 @@ cd MANmol
 conda create -n manmol python=3.9
 conda activate manmol
 
+# Install PyTorch (adjust CUDA version as needed)
+pip install torch==2.0.0 --index-url https://download.pytorch.org/whl/cu118
+
 # Install dependencies
 pip install -r requirements.txt
 
-# Run example
-python MANmol/Multi_Modal_Attention.py
+# Run tests
+PYTHONPATH=. pytest -q tests/
+
+# Dry-run to verify setup
+python scripts/train_manmol.py --config configs/manmol_clean.yaml --dry-run
+
+# Train the recommended model (descriptor + graph concat)
+python scripts/train_manmol.py --config configs/fusion_ablation/dg_concat_rdkit.yaml
+
+# Train with all three modalities
+python scripts/train_manmol.py --config configs/fusion_ablation/all_concat_rdkit.yaml
+
+# Train a baseline
+python scripts/train_baseline.py --config configs/baseline_descriptor_mlp.yaml
 ```
+
+The ChemBERTa encoder is downloaded automatically from HuggingFace ([ChemBERTa](https://huggingface.co/DeepChem/ChemBERTa-100M-MLM)) on first use.
 
 ## 📁 Project Structure
 
 ```
-MANmol/
-├── README.md                          # Project documentation
-├── LICENSE                            # MIT License
-├── requirements.txt                   # Python dependencies
+├── manmol/                          # Clean pipeline (core package)
+│   ├── models.py                    # MANmolClean model + fusion variants
+│   ├── data.py                      # Data loading, splitting, batching
+│   ├── baselines.py                 # Single-modality baseline models
+│   ├── graph_features.py            # RDKit rich graph feature extraction
+│   ├── metrics.py                   # Regression metrics (R2, RMSE, MAE)
+│   ├── training.py                  # Training utilities
+│   └── seed.py                      # Reproducibility
 │
-├── Automated_feature_engineering/     # Automated feature engineering
-│   ├── Automated_feature_engineering.py
-│   └── readme
+├── scripts/                         # Training and utility scripts
+│   ├── train_manmol.py              # Train multimodal model
+│   ├── train_baseline.py            # Train single-modality baseline
+│   ├── make_splits.py               # Generate ID-level splits
+│   ├── audit_graph_data.py          # Graph data quality audit
+│   └── smoke_test.sh                # End-to-end validation
 │
-├── data/                              # Datasets
-│   ├── AEdata.csv                     # Adsorption energy dataset
+├── configs/                         # YAML configuration files
+│   ├── manmol_clean.yaml            # Default MANmol (legacy graph)
+│   ├── manmol_rdkit_rich.yaml       # MANmol with RDKit rich graph
+│   ├── baseline_*.yaml              # Single-modality baseline configs
+│   ├── fusion_ablation/             # Fusion variant experiments
+│   │   ├── dg_concat_rdkit.yaml     # Descriptor + Graph concat (recommended)
+│   │   ├── all_concat_rdkit.yaml    # All-3 concat (best overall)
+│   │   ├── all_channel_gate_rdkit.yaml
+│   │   ├── all_cross_attend_rdkit.yaml
+│   │   └── ...
+│   └── graph_debug/                 # Graph debugging experiments
+│
+├── tests/                           # Unit tests
+│   ├── test_forward_shapes.py
+│   ├── test_graph_batch.py
+│   └── test_split_no_leakage.py
+│
+├── data/                            # Data files
+│   ├── 3-Opt_XGB_descriptor.csv
 │   ├── all_data_ID-smiles-graph-13320.pkl
-│   └── readme
+│   └── splits/split_seed42.csv
 │
-├── Fine-tuning_multiple_models/       # Multiple model fine-tuning
-│   ├── BARTSmiles/                    # BART model fine-tuning
-│   ├── ChemBERTa-77M/                 # ChemBERTa model fine-tuning
-│   ├── GAT/                           # Graph Attention Network
-│   ├── GCN/                           # Graph Convolutional Network
-│   ├── GIN/                           # Graph Isomorphism Network
-│   ├── GraphSAGE/                     # Graph Sample and Aggregate Network
-│   ├── MoLFormer/                     # MoLFormer model
-│   └── MPNN/                          # Message Passing Neural Network
+├── MANmol/                          # Legacy code (original experiments)
+├── Fine-tuning_multiple_models/      # Legacy baseline scripts
+├── SMILES_Mask_pre-trained/          # SMILES pre-training scripts
+├── Automated_feature_engineering/    # Feature engineering pipeline
+├── symbolic regression/              # Symbolic regression analysis
 │
-├── MANmol/                            # Core MANmol framework
-│   ├── Multi_Modal_Attention.py       # Multimodal attention main model
-│   ├── data_enhancement.py            # Data enhancement
-│   ├── load_and_merge_data.py         # Data loading and merging
-│   ├── mol_graph_flip_rotate.py       # Molecular graph transformation
-│   ├── smiles_enumeration.py          # SMILES enumeration
-│   └── readme
+├── outputs_fusion_ablation/          # Experiment outputs (gitignored)
+├── outputs_graph_debug/              # Graph debug outputs (gitignored)
 │
-├── MANmol_Pre-trained_models/         # Pre-trained models
-│   ├── MANmol-G.model                 # Pre-trained model file
-│   └── readme
-│
-├── SMILES_Mask_pre-trained/           # SMILES mask pre-training
-│   ├── SMILES_mask_pre-training.py
-│   └── Mask_pre-trained_model/        # Pre-trained model files
-│
-├── symbolic_regression/               # Symbolic regression analysis
-    ├── SR.py                          # Symbolic regression main program
-    ├── SR_validation.py               # Validation program
-    └── readme
+├── requirements.txt
+├── LICENSE
+└── README.md
 ```
 
 ## 🔧 Installation Guide
 ### 1. Dependency Installation
 ```bash
-# Install PyTorch (choose based on CUDA version)
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+# PyTorch with CUDA
+pip install torch==2.0.0 --index-url https://download.pytorch.org/whl/cu118
 
-# Install PyTorch Geometric
+# PyTorch Geometric
 pip install torch_geometric
 
-# Install other dependencies
-pip install transformers pandas numpy scikit-learn matplotlib rdkit-pypi mordred openbabel pysr peft
+# Core dependencies
+pip install transformers pandas numpy scikit-learn rdkit pyyaml tqdm
+
+# Optional
+pip install xgboost pytest
 ```
 
-### 2. Verify Installation
-```python
+### 3. Verify Installation
+```bash
+PYTHONPATH=. python -c "
 import torch
-print(f"PyTorch version: {torch.__version__}")
-print(f"CUDA available: {torch.cuda.is_available()}")
-print(f"GPU count: {torch.cuda.device_count()}")
+from manmol.models import MANmolClean
+print(f'PyTorch: {torch.__version__}')
+print(f'CUDA: {torch.cuda.is_available()}')
+print('MANmol OK')
+"
 ```
 
 ## 💻 Usage Examples
 
-### Example 1: Run Multimodal Attention Model
-```python
-# Import necessary libraries
-from MANmol.Multi_Modal_Attention import MultiModalAttentionModelWithMLP
-import torch
-
-# Initialize model
-model = MultiModalAttentionModelWithMLP(
-    chemberta_model_name="ChemBERTa-77M-MLM",
-    descriptor_size=256,
-    gnn_hidden_size=128
-)
-
-# Move model to GPU
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = model.to(device)
-
-# Train model (example)
-# ... training code ...
-```
-
-### Example 2: Automated Feature Engineering
-```python
-from Automated_feature_engineering.Automated_feature_engineering import (
-    calculate_descriptors,
-    select_features,
-    augment_smiles,
-    generate_molecular_graphs
-)
-
-# Calculate molecular descriptors
-descriptors = calculate_descriptors(smiles_list)
-
-# Feature selection
-selected_features = select_features(descriptors, target_values)
-
-# SMILES data augmentation
-augmented_smiles = augment_smiles(smiles_list)
-
-# Generate molecular graphs
-molecular_graphs = generate_molecular_graphs(augmented_smiles)
-```
-
-### Example 3: Model Fine-tuning
+### Train a Model
 ```bash
-# Fine-tune ChemBERTa model
-cd Fine-tuning_multiple_models/ChemBERTa-77M
-python ChemBERTa-MTR-train.py
-
-# Fine-tune GAT model
-cd ../GAT
-python GAT-train.py
+# Descriptor + Graph concat (recommended — best performance without SMILES)
+python scripts/train_manmol.py --config configs/fusion_ablation/dg_concat_rdkit.yaml
 ```
 
-### Example 4: Symbolic Regression Analysis
+### Train with Custom Modalities and Fusion
 ```bash
-cd symbolic_regression
-python SR.py
+# All three modalities with channel gate fusion
+python scripts/train_manmol.py --config configs/fusion_ablation/all_channel_gate_rdkit.yaml
 ```
 
-## 📈 Experimental Results
+### Programmatic Usage
+```python
+from manmol.models import MANmolClean
 
-### Performance Metrics
-| Model | R² Score | RMSE | MAE | Training Time |
-|-------|----------|------|-----|---------------|
-| MANmol (Multimodal) | 0.92 | 0.15 | 0.11 | 2.1 hours |
-| ChemBERTa-77M | 0.87 | 0.21 | 0.16 | 1.8 hours |
-| GAT | 0.85 | 0.23 | 0.18 | 1.2 hours |
-| GCN | 0.83 | 0.25 | 0.20 | 1.0 hours |
-| Traditional ML Models | 0.78 | 0.31 | 0.25 | 0.5 hours |
+model = MANmolClean(
+    smiles_model_name="DeepChem/ChemBERTa-77M-MLM",
+    descriptor_size=33,
+    node_input_dim=18,
+    hidden_size=128,
+    gnn_layers=3,
+    gnn_edge_dim=12,
+    modalities=["descriptor", "graph"],    # skip SMILES
+    fusion="concat",                        # simple concat
+    modality_dropout=0.1,                   # optional regularization
+)
+```
+
+### Run All Smoke Tests
+```bash
+bash scripts/smoke_test.sh
+```
+
+## Experimental Results
+
+All results below use **strict ID-level split** (seed=42), **RDKit rich graph**, and **single test evaluation** after best validation checkpoint.
 
 ### Key Findings
 1. **Multimodal fusion significantly improves performance**: MANmol improves R² by 5-9% compared to single-modal models
 2. **Attention mechanism is effective**: Adaptive attention can dynamically adjust the importance of different modalities
-3. **Data augmentation shows clear effects**: Molecular graph augmentation increases training samples by 6.8x, improving model generalization
-4. **Symbolic regression provides interpretability**: Discovers mathematical relationships between adsorption energy and molecular properties like polarity and size
+3. **Simple concat fusion is sufficient**. Neither scalar gating, channel-wise gating, nor cross-modal attention outperforms concatenation + MLP.
+4. **Per-modality LayerNorm degrades performance** (R2 = 0.9397 vs 0.9515), likely because it removes informative scale differences between modality embeddings.
+5. **Data augmentation shows clear effects**: Molecular graph augmentation increases training samples by 6.8x, improving model generalization
+6. **Symbolic regression provides interpretability**: Discovers mathematical relationships between adsorption energy and molecular properties like polarity and size
+
+## Fusion Variants
+
+| Config | Modalities | Fusion | Notes |
+|---|---|---|---|
+| `dg_concat_rdkit.yaml` | D+G | concat | Recommended (best without SMILES) |
+| `all_concat_rdkit.yaml` | S+D+G | concat | Best overall (marginal SMILES benefit) |
+| `all_channel_gate_rdkit.yaml` | S+D+G | channel_gate | Dimension-wise gating |
+| `all_cross_attend_rdkit.yaml` | S+D+G | cross_attend | Cross-modal attention |
+| `all_concat_dropout_rdkit.yaml` | S+D+G | concat + dropout | Modality dropout (p=0.2) |
+| `all_gated_rdkit.yaml` | S+D+G | gated | Original scalar gating |
+| `dg_gated_rdkit.yaml` | D+G | gated | Pairwise gated |
+| `ds_gated_rdkit.yaml` | S+D | gated | SMILES + descriptor |
+| `sg_gated_rdkit.yaml` | S+G | gated | SMILES + graph |
+
+All configs in `configs/fusion_ablation/`. See `v1_review.md` for detailed analysis.
 
 ## 🤝 Contribution Guidelines
 
